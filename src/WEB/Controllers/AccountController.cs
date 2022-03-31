@@ -26,6 +26,11 @@ public class AccountController : ControllerBase
         this.userManager = userManager;
     }
 
+    /// <summary>
+    /// POST register action.
+    /// </summary>
+    /// <param name="credentials">Credentials.</param>
+    /// <returns>Status code.</returns>
     [HttpPost]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
@@ -34,7 +39,8 @@ public class AccountController : ControllerBase
     {
         var user = new User
         {
-            UserName = credentials.UserName,
+            UserName = credentials.Email,
+            Email = credentials.Email,
         };
         var registerResult = await userManager.CreateAsync(user, credentials.Password);
 
@@ -46,13 +52,18 @@ public class AccountController : ControllerBase
         return Ok("Registered.");
     }
 
+    /// <summary>
+    /// POST authorize action.
+    /// </summary>
+    /// <param name="credentials">Credentials.</param>
+    /// <returns>Status code.</returns>
     [HttpPost]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [Produces("application/json")]
     public async Task<ActionResult> Authorize([FromQuery]UserCredentials credentials)
     {
-        var signInResult = await signInManager.PasswordSignInAsync(credentials.UserName, credentials.Password, isPersistent: false, lockoutOnFailure: false);
+        var signInResult = await signInManager.PasswordSignInAsync(credentials.Email, credentials.Password, isPersistent: false, lockoutOnFailure: false);
         if (!signInResult.Succeeded)
         {
             return BadRequest("Failed to authorize. Check your credentials.");
@@ -60,6 +71,10 @@ public class AccountController : ControllerBase
         return Ok("Authorized.");
     }
 
+    /// <summary>
+    /// POST logout action.
+    /// </summary>
+    /// <returns>Status code.</returns>
     [Authorize]
     [HttpPost]
     [Produces("application/json")]

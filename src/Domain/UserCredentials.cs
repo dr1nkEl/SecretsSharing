@@ -6,9 +6,9 @@
 public record UserCredentials
 {
     /// <summary>
-    /// Username.
+    /// Email.
     /// </summary>
-    public string UserName { get; init; }
+    public string Email { get; init; }
 
     /// <summary>
     /// Password.
