@@ -1,4 +1,4 @@
-﻿namespace Domain;
+﻿namespace WEB.Infrastructure.Models;
 
 /// <summary>
 /// User credentials.
