@@ -26,10 +26,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Infrastructure\MappingProfiles\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Infrastructure.DataAccess\Infrastructure.DataAccess.csproj" />
   </ItemGroup>
 
