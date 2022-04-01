@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Domain;
+using UseCases.Common;
 
 namespace WEB.Infrastructure.MappingProfiles;
 
@@ -12,5 +14,6 @@ public class FileMappingProfile : Profile
     /// </summary>
     public FileMappingProfile()
     {
+        CreateMap<UseCases.Common.StoredFileDto, StoredFile>();
     }
 }

@@ -11,6 +11,9 @@ namespace Infrastructure.DataAccess;
 /// </summary>
 public class AppDbContext : IdentityDbContext<User, IdentityRole<int>, int>, IAppDbContext
 {
+    /// <inheritdoc/>
+    public DbSet<StoredFile> StoredFiles { get; }
+
     /// <summary>
     /// Constructor.
     /// </summary>

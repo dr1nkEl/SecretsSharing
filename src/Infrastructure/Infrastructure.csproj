@@ -9,10 +9,18 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="11.0.1" />
+    <PackageReference Include="AWSSDK.S3" Version="3.7.8.14" />
+    <PackageReference Include="MediatR" Version="10.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
+    <PackageReference Include="Saritasa.Tools.Domain" Version="0.8.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Infrastructure.Abstractions\Infrastructure.Abstractions.csproj" />
+    <ProjectReference Include="..\Infrastructure.Common\Infrastructure.Common.csproj" />
+    <ProjectReference Include="..\UseCases.Common\UseCases.Common.csproj" />
+    <ProjectReference Include="..\UseCases\UseCases.csproj" />
   </ItemGroup>
 
 </Project>

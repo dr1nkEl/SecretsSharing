@@ -1,17 +1,26 @@
-﻿using Infrastructure.Abstractions;
+﻿using Amazon;
+using Amazon.Runtime;
+using Amazon.S3;
+using Amazon.S3.Model;
+using Amazon.S3.Transfer;
+using Infrastructure.Abstractions;
+using Infrastructure.Common;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 
 namespace Infrastructure;
 
-//PSEUDO CODE
+/// <summary>
+/// AWS S3 file storage.
+/// </summary>
 public class S3FileStorage : IFileStorage
 {
-    private readonly AmazonS3Client s3Client;
-    private readonly TransferUtility transferUtility;
+    private readonly S3Credentials credentials;
 
-    public S3Service(AmazonS3Client s3Client)
+    public S3FileStorage(IOptions<S3Credentials> credentialOptions)
     {
-        this.s3Client = s3Client;
-        transferUtility = new TransferUtility(s3Client);
+        this.credentials = credentialOptions.Value;
+        //transferUtility = new TransferUtility(s3Client);
     }
 
     private static List<Tag> GetFileTags(bool isDeleting)
@@ -27,45 +36,11 @@ public class S3FileStorage : IFileStorage
 
         var response = await DownloadFileAsync(model);
 
-        bool deletionFlag = Convert.ToBoolean(tags.First(x => x.Key == S3ObjectTags.Delete).Value);
-
         if (deletionFlag)
             DeleteFileAsync(model);
         return response;
     }
 
-    public async Task UploadFileAsync(BucketFile uploadModel)
-    {
-        using (var memoryStream = new MemoryStream())
-        {
-            await uploadModel.File.CopyToAsync(memoryStream);
-            await transferUtility.UploadAsync(new TransferUtilityUploadRequest()
-            {
-                AutoCloseStream = true,
-                InputStream = memoryStream,
-                TagSet = GetFileTags(uploadModel.IsDeleting),
-                BucketName = uploadModel.BucketName,
-                Key = uploadModel.File.FileName
-            });
-        }
-    }
-
-    public async Task UploadTextAsync(BucketFile model)
-    {
-        var path = GetTempFilePath(model.TextContent);
-
-        using (var file = new FileStream(path, FileMode.Open, FileAccess.Read))
-        {
-            await transferUtility.UploadAsync(new TransferUtilityUploadRequest()
-            {
-                AutoCloseStream = true,
-                InputStream = file,
-                TagSet = GetFileTags(model.IsDeleting),
-                BucketName = model.BucketName,
-                Key = Guid.NewGuid().ToString() + ".txt"
-            });
-        }
-    }
 
     private static string GetTempFilePath(string text)
     {
@@ -74,8 +49,6 @@ public class S3FileStorage : IFileStorage
         File.WriteAllText(path, text);
         return path;
     }
-
-
 
     private async Task<GetObjectResponse> DownloadFileAsync(BucketFile downloadModel)
     {
@@ -97,11 +70,6 @@ public class S3FileStorage : IFileStorage
 
         return (await s3Client.GetObjectTaggingAsync(getTagsRequest)).Tagging;
 
-    }
-
-    public async void DeleteFileAsync(BucketFile deleteModel)
-    {
-        await s3Client.DeleteObjectAsync(new DeleteObjectRequest() { BucketName = deleteModel.BucketName, Key = deleteModel.FileKey });
     }
 
 
@@ -126,5 +94,69 @@ public class S3FileStorage : IFileStorage
 
         return dict;
     }
-    
+
+    public Task DownloadAsync(int id, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task UplaodAsync(IFormFile file, CancellationToken cancellationToken)
+    {
+        using var memoryStream = new MemoryStream();
+        using var s3Client = GetS3Client();
+        using var transferUtility = new TransferUtility(s3Client);
+
+
+        await file.CopyToAsync(memoryStream, cancellationToken);
+        await transferUtility.UploadAsync(new TransferUtilityUploadRequest()
+        {
+            AutoCloseStream = true,
+            InputStream = memoryStream,
+            //TagSet = GetFileTags(uploadModel.IsDeleting),
+            //BucketName = uploadModel.BucketName,
+            //Key = uploadModel.File.FileName
+        });
+        
+    }
+
+    public async Task UploadTextAsync(string text, CancellationToken cancellationToken)
+    {
+        using var s3Client = GetS3Client();
+        using var transferUtility = new TransferUtility(s3Client);
+        var path = GetTempFilePath(text);
+
+        using var file = new FileStream(path, FileMode.Open, FileAccess.Read);
+        await transferUtility.UploadAsync(new TransferUtilityUploadRequest()
+        {
+            AutoCloseStream = true,
+            InputStream = file,
+            //TagSet = GetFileTags(model.IsDeleting),
+            //BucketName = model.BucketName,
+            Key = Guid.NewGuid().ToString() + ".txt"
+        }, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task DeleteFileAsync(int id, CancellationToken cancellationToken)
+    {
+        using var s3Client = GetS3Client();
+        var response = await s3Client.DeleteObjectAsync(
+            new DeleteObjectRequest
+            {
+                BucketName = "SomeBucket",
+                Key = "SomeKey"
+            }, cancellationToken);
+        if (response.HttpStatusCode != System.Net.HttpStatusCode.OK)
+        {
+            throw new HttpRequestException("Deletion failed.", inner: null, response.HttpStatusCode);
+        }
+    }
+
+    private AmazonS3Client GetS3Client()
+    {
+        var awsCredentials =
+            new BasicAWSCredentials(credentials.AccessKeyId, credentials.SecretAccessKeyId);
+        var s3client = new AmazonS3Client(awsCredentials, RegionEndpoint.EUNorth1);
+        return s3client;
+    }
 }

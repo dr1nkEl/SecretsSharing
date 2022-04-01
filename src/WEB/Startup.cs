@@ -1,15 +1,16 @@
-﻿using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.Authorization;
+﻿using Microsoft.AspNetCore.Identity;
 using WEB.Infrastructure.Initializers;
 using Infrastructure.DataAccess;
 using WEB.Infrastructure.Startup;
 using Domain;
-using Microsoft.Extensions.DependencyInjection;
+using Infrastructure.Abstractions;
+using Infrastructure;
+using WEB.Infrastructure.MappingProfiles;
+using MediatR;
+using UseCases;
+using WEB.Infrastructure.Services;
+using WEB.Infrastructure.Models;
+using Infrastructure.Common;
 
 namespace Saritasa.People.Web;
 
@@ -58,6 +59,19 @@ public class Startup
 
         // Add authorization
         services.AddAuthorization();
+
+        // S3 storage client.
+        services.Configure<S3Credentials>(configuration.GetSection("S3Credentials"));
+
+        // Automapper.
+        services.AddAutoMapper(typeof(FileMappingProfile).Assembly);
+
+        // MediatR.
+        services.AddMediatR(typeof(DeleteFileCommand).Assembly);
+
+        // Other dependencies.
+        services.AddTransient<IFileStorage, LocalFileStorage>();
+        services.AddTransient<ILoggedUserAccessor, LoggedUserAccessor>();
     }
 
     /// <summary>
