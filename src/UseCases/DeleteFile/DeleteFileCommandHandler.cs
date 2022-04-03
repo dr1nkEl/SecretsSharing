@@ -25,8 +25,8 @@ internal class DeleteFileCommandHandler : AsyncRequestHandler<DeleteFileCommand>
     protected override async Task Handle(DeleteFileCommand request, CancellationToken cancellationToken)
     {
         var item = await appDbContext.StoredFiles.GetAsync(file => file.Id == request.Id, cancellationToken);
+        await fileStorage.DeleteAsync(request.Id, cancellationToken);
         item.DeletedAt = DateTime.UtcNow;
         await appDbContext.SaveChangesAsync(cancellationToken);
-        await fileStorage.DeleteAsync(request.Id, cancellationToken);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Http;
+using UseCases.Common;
 
 namespace UseCases;
 
@@ -7,4 +8,5 @@ namespace UseCases;
 /// Upload file command.
 /// </summary>
 /// <param name="File"></param>
-public record UploadFileCommand(IFormFile File) : IRequest;
+/// <param name="IsDeleting">Is deleting.</param>
+public record UploadFileCommand(IFormFile File, bool IsDeleting) : IRequest<Response<int>>;

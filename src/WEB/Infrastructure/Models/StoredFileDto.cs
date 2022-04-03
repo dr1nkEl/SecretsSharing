@@ -12,4 +12,12 @@ public record StoredFileDto
 
     /// <inheritdoc cref="StoredFile.Name"/>
     public string Name { get; init; }
+
+    /// <inheritdoc cref="StoredFile.IsDeleting"/>
+    public bool IsDeleting { get; init; }
+
+    /// <summary>
+    /// Download link.
+    /// </summary>
+    public string DownloadLink { get; internal set; }
 }

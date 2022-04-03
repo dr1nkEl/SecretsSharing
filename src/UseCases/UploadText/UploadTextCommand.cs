@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using UseCases.Common;
 
 namespace UseCases;
 
@@ -6,4 +7,5 @@ namespace UseCases;
 /// Upload text command.
 /// </summary>
 /// <param name="Text">Text.</param>
-public record UploadTextCommand(string Text) : IRequest;
+/// <param name="IsDeleting">Is deleting.</param>
+public record UploadTextCommand(string Text, bool IsDeleting) : IRequest<Response<int>>;

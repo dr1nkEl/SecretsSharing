@@ -30,6 +30,11 @@ public record StoredFile
     public User AssociatedUser { get; set; }
 
     /// <summary>
+    /// Should file be deleted after download or not.
+    /// </summary>
+    public bool IsDeleting { get; set; }
+
+    /// <summary>
     /// Deleted at.
     /// </summary>
     public DateTime? DeletedAt { get; set; }

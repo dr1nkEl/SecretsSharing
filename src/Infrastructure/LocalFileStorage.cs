@@ -37,10 +37,9 @@ public class LocalFileStorage : IFileStorage
     }
 
     /// <inheritdoc/>
-    public async Task DeleteAsync(int fileId, CancellationToken cancellationToken)
+    public Task DeleteAsync(int fileId, CancellationToken cancellationToken)
     {
-        var path = await GetPathOfFile(fileId, cancellationToken);
-        File.Delete(path);
+        return Task.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -88,12 +87,24 @@ public class LocalFileStorage : IFileStorage
     public async Task<Response<StoredFileDto>> UploadTextAsync(string text, CancellationToken cancellationToken)
     {
         var path = GetTempFilePath(text);
-
+        var user = await userAccessor.GetMeAsync(cancellationToken);
+        var newFilePath = $@"{environment.WebRootPath}\Files\{user.UserName}";
+        Directory.CreateDirectory(newFilePath);
+        var fileName = $"{Guid.NewGuid()}.txt";
         using var file = new FileStream(path, FileMode.Open, FileAccess.Read);
-        
-        
 
-        throw new NotImplementedException();
+        using var fileStream = new FileStream($@"{newFilePath}\{fileName}", FileMode.Create, FileAccess.ReadWrite);
+
+        await file.CopyToAsync(fileStream, cancellationToken);
+
+        return new Response<StoredFileDto>
+        {
+            Result = new StoredFileDto
+            {
+                AssociatedUserId = user.Id,
+                Name = fileName,
+            }
+        };
     }
 
     private static string GetTempFilePath(string text)

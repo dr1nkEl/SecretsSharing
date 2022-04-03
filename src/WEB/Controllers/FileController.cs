@@ -38,33 +38,42 @@ public class FileController : ControllerBase
     /// POST upload file action.
     /// </summary>
     /// <param name="file">File.</param>
+    /// <param name="isDeleting">Is deleting.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Status code.</returns>
     [HttpPost]
     [Authorize]
-    public async Task<ActionResult> Upload([Required]IFormFile file, CancellationToken cancellationToken)
+    public async Task<ActionResult> Upload([Required]IFormFile file, [FromQuery] bool isDeleting, CancellationToken cancellationToken)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
 
-        await mediator.Send(new UploadFileCommand(file), cancellationToken);
+        var response = await mediator.Send(new UploadFileCommand(file, isDeleting), cancellationToken);
 
-        return Ok();
+        return Ok($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{Url.Action("Download", new { fileId = response.Result })}");
     }
 
     /// <summary>
     /// POST upload text action.
     /// </summary>
     /// <param name="text">Text.</param>
+    /// <param name="isDeleting">Is deleting.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Status code.</returns>
     [HttpPost]
     [Authorize]
-    public async Task<ActionResult> UploadText([FromQuery][Required] string text, CancellationToken cancellationToken)
+    public async Task<ActionResult> UploadText([FromQuery][Required] string text, [FromQuery]bool isDeleting, CancellationToken cancellationToken)
     {
-        return Ok();
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var response = await mediator.Send(new UploadTextCommand(text, isDeleting), cancellationToken);
+
+        return Ok($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{Url.Action("Download", new { fileId = response.Result })}");
     }
 
     /// <summary>
@@ -78,7 +87,12 @@ public class FileController : ControllerBase
     {
         var user = await userAccessor.GetMeAsync(cancellationToken);
         var items = await mediator.Send(new GetFilesQuery(user.Id), cancellationToken);
-        return Ok(mapper.Map<IEnumerable<StoredFileDto>>(items));
+        var mapped = mapper.Map<IEnumerable<StoredFileDto>>(items);
+        foreach (var dto in mapped)
+        {
+            dto.DownloadLink = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{Url.Action("Download", new { fileId = dto.Id })}";
+        }
+        return Ok(mapped);
     }
 
     /// <summary>
@@ -103,6 +117,17 @@ public class FileController : ControllerBase
     /// <returns>File.</returns>
     [HttpGet]
     public async Task<FileStreamResult> Download(int fileId, CancellationToken cancellationToken)
+    {
+        var result = await GetFileAsync(fileId, cancellationToken);
+        var file = await mediator.Send(new GetFileQuery(fileId), CancellationToken.None);
+        if (file.IsDeleting)
+        {
+            await mediator.Send(new DeleteFileCommand(fileId), CancellationToken.None);
+        }
+        return result;
+    }
+
+    private async Task<FileStreamResult> GetFileAsync(int fileId, CancellationToken cancellationToken)
     {
         var file = await mediator.Send(new DownloadFileQuery(fileId), cancellationToken);
         return File(file.ResponseStream, file.ContentType, file.Name);

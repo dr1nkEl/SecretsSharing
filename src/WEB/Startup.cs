@@ -9,6 +9,10 @@ using WEB.Infrastructure.MappingProfiles;
 using MediatR;
 using UseCases;
 using Infrastructure.Common;
+using Microsoft.AspNetCore.Mvc;
+using WEB.Infrastructure.Middleware;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Text.Json;
 
 namespace Saritasa.People.Web;
 
@@ -79,7 +83,7 @@ public class Startup
         {
             app.UseHsts();
         }
-
+        app.UseMiddleware<ApiExceptionMiddleware>();
         app.UseStaticFiles();
         app.UseHttpsRedirection();
         app.UseSwagger();

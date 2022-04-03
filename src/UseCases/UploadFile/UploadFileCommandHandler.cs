@@ -2,11 +2,12 @@
 using Domain;
 using Infrastructure.Abstractions;
 using MediatR;
+using UseCases.Common;
 
 namespace UseCases;
 
 /// Handler for <inheritdoc cref="UploadFileCommand"/>
-internal class UploadFileCommandHandler : AsyncRequestHandler<UploadFileCommand>
+internal class UploadFileCommandHandler : IRequestHandler<UploadFileCommand, Response<int>>
 {
     private readonly IFileStorage fileStorage;
     private readonly IAppDbContext appDbContext;
@@ -26,11 +27,16 @@ internal class UploadFileCommandHandler : AsyncRequestHandler<UploadFileCommand>
     }
 
     /// <inheritdoc/>
-    protected override async Task Handle(UploadFileCommand request, CancellationToken cancellationToken)
+    public async Task<Response<int>> Handle(UploadFileCommand request, CancellationToken cancellationToken)
     {
         var response = await fileStorage.UploadAsync(request.File, cancellationToken);
         var item = mapper.Map<StoredFile>(response.Result);
+        item.IsDeleting = request.IsDeleting;
         await appDbContext.StoredFiles.AddAsync(item, cancellationToken);
         await appDbContext.SaveChangesAsync(cancellationToken);
+        return new Response<int>
+        {
+            Result = item.Id,
+        };
     }
 }

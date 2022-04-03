@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Saritasa.Tools.Domain.Exceptions;
 using System.Text;
+using System.Text.Json;
 using Web.Infrastructure.Models;
 
 namespace WEB.Infrastructure.Middleware;
@@ -20,7 +21,6 @@ internal sealed class ApiExceptionMiddleware
     private const string ProblemJsonMimeType = @"application/problem+json";
 
     private readonly RequestDelegate next;
-    private readonly IJsonHelper jsonHelper;
     private readonly ILogger<ApiExceptionMiddleware> logger;
     private readonly IWebHostEnvironment environment;
     private readonly HtmlTestEncoder encoder = new();
@@ -39,12 +39,10 @@ internal sealed class ApiExceptionMiddleware
     /// </summary>
     public ApiExceptionMiddleware(
         RequestDelegate next,
-        IJsonHelper jsonHelper,
         ILogger<ApiExceptionMiddleware> logger,
         IWebHostEnvironment environment)
     {
         this.next = next;
-        this.jsonHelper = jsonHelper;
         this.logger = logger;
         this.environment = environment;
     }
@@ -74,7 +72,8 @@ internal sealed class ApiExceptionMiddleware
             httpContext.Response.ContentType = ProblemJsonMimeType;
 
             await using var stringWriter = new StringWriter(new StringBuilder(200));
-            jsonHelper.Serialize(problemDetails).WriteTo(stringWriter, encoder);
+            var problemDetailsJson = JsonSerializer.Serialize(problemDetails);
+            await stringWriter.WriteAsync(problemDetailsJson);
             await httpContext.Response.WriteAsync(stringWriter.ToString());
         }
     }

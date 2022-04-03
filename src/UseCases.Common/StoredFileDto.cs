@@ -16,4 +16,7 @@ public record StoredFileDto
 
     /// <inheritdoc cref="StoredFile.AssociatedUserId"/>
     public int AssociatedUserId { get; set; }
+
+    /// <inheritdoc/>
+    public bool IsDeleting { get; init; }
 }
