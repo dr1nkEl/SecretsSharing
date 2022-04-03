@@ -21,4 +21,22 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<int>, int>, IAp
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
     }
+
+    /// <inheritdoc/>
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+        RestrictCascadeDelete(builder);
+
+        builder.Entity<StoredFile>()
+            .HasQueryFilter(file => file.DeletedAt == null);
+    }
+
+    private static void RestrictCascadeDelete(ModelBuilder modelBuilder)
+    {
+        foreach (var relationship in modelBuilder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
+        {
+            relationship.DeleteBehavior = DeleteBehavior.Restrict;
+        }
+    }
 }

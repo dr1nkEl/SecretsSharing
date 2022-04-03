@@ -11,6 +11,11 @@ internal class CreateFileCommandHandler : AsyncRequestHandler<CreateFileCommand>
     private readonly IAppDbContext appDbContext;
     private readonly IMapper mapper;
 
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    /// <param name="appDbContext">Application DB context.</param>
+    /// <param name="mapper">Mapper.</param>
     public CreateFileCommandHandler(IAppDbContext appDbContext, IMapper mapper)
     {
         this.appDbContext = appDbContext;

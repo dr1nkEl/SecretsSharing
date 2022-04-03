@@ -1,7 +1,10 @@
-﻿namespace UseCases;
+﻿using MediatR;
+using UseCases.Common;
+
+namespace UseCases;
 
 /// <summary>
 /// Get user files query.
 /// </summary>
-/// <param name="Userd">User ID.</param>
-public record GetUserFilesQuery(int Userd);
+/// <param name="UserId">User ID.</param>
+public record GetUserFilesQuery(int UserId) : IRequest<IEnumerable<StoredFileDto>>;

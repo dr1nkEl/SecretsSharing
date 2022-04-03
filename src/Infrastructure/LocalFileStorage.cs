@@ -71,8 +71,23 @@ public class LocalFileStorage : IFileStorage
     }
 
     /// <inheritdoc/>
-    public Task UploadTextAsync(string text, CancellationToken cancellationToken)
+    public async Task UploadTextAsync(string text, CancellationToken cancellationToken)
     {
+        var path = GetTempFilePath(text);
+
+        using var file = new FileStream(path, FileMode.Open, FileAccess.Read);
+        
+        
+
         throw new NotImplementedException();
     }
+
+    private static string GetTempFilePath(string text)
+    {
+        var path = Path.GetTempFileName();
+        Path.ChangeExtension(path, ".txt");
+        File.WriteAllText(path, text);
+        return path;
+    }
+
 }

@@ -8,8 +8,6 @@ using Infrastructure;
 using WEB.Infrastructure.MappingProfiles;
 using MediatR;
 using UseCases;
-using WEB.Infrastructure.Services;
-using WEB.Infrastructure.Models;
 using Infrastructure.Common;
 
 namespace Saritasa.People.Web;
@@ -44,6 +42,7 @@ public class Startup
         services.AddDbContext<AppDbContext>(
             new DbContextOptionsSetup(configuration.GetConnectionString("AppDatabase")).Setup);
         services.AddAsyncInitializer<DatabaseInitializer>();
+        services.AddScoped<IAppDbContext, AppDbContext>();
 
         // Swagger.
         services.AddSwaggerGen();
@@ -60,16 +59,11 @@ public class Startup
         // Add authorization
         services.AddAuthorization();
 
-        // S3 storage client.
-        services.Configure<S3Credentials>(configuration.GetSection("S3Credentials"));
-
         // Automapper.
         services.AddAutoMapper(typeof(FileMappingProfile).Assembly);
 
-        // MediatR.
-        services.AddMediatR(typeof(DeleteFileCommand).Assembly);
-
         // Other dependencies.
+        services.AddMediatR(typeof(DeleteFileCommand).Assembly);
         services.AddTransient<IFileStorage, LocalFileStorage>();
         services.AddTransient<ILoggedUserAccessor, LoggedUserAccessor>();
     }

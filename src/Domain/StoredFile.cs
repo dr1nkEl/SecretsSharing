@@ -28,4 +28,9 @@ public record StoredFile
     /// Associated user.
     /// </summary>
     public User AssociatedUser { get; set; }
+
+    /// <summary>
+    /// Deleted at.
+    /// </summary>
+    public DateTime? DeletedAt { get; set; }
 }
