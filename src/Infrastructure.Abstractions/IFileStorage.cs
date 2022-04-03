@@ -13,8 +13,8 @@ public interface IFileStorage
     /// </summary>
     /// <param name="id">ID.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>Task.</returns>
-    Task DownloadAsync(int id, CancellationToken cancellationToken = default);
+    /// <returns>Download file DTO.</returns>
+    Task<DownloadFileDto> DownloadAsync(int id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Uploads file to storage.

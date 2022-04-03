@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using Infrastructure.Common;
+using MediatR;
 
 namespace UseCases;
 
@@ -6,4 +7,4 @@ namespace UseCases;
 /// Download file query.
 /// </summary>
 /// <param name="Id">Id.</param>
-public record DownloadFileQuery(int Id) : IRequest;
+public record DownloadFileQuery(int Id) : IRequest<DownloadFileDto>;

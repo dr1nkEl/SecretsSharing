@@ -1,10 +1,11 @@
 ﻿using Infrastructure.Abstractions;
+using Infrastructure.Common;
 using MediatR;
 
 namespace UseCases;
 
 /// Handler for <inheritdoc cref="DownloadFileQuery"/>
-internal class DownloadFileQueryHandler : AsyncRequestHandler<DownloadFileQuery>
+internal class DownloadFileQueryHandler : IRequestHandler<DownloadFileQuery, DownloadFileDto>
 {
     private readonly IFileStorage fileStorage;
 
@@ -18,8 +19,8 @@ internal class DownloadFileQueryHandler : AsyncRequestHandler<DownloadFileQuery>
     }
 
     /// <inheritdoc/>
-    protected override Task Handle(DownloadFileQuery request, CancellationToken cancellationToken)
+    public async Task<DownloadFileDto> Handle(DownloadFileQuery request, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        return await fileStorage.DownloadAsync(request.Id, cancellationToken);
     }
 }

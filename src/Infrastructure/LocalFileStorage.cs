@@ -5,6 +5,7 @@ using MediatR;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Saritasa.Tools.Domain.Exceptions;
+using System.Net;
 using UseCases;
 
 namespace Infrastructure;
@@ -26,7 +27,8 @@ public class LocalFileStorage : IFileStorage
     /// <param name="environment">Hosting environment.</param>
     /// <param name="mapper">Mapper.</param>
     /// <param name="mediator">Mediator.</param>
-    public LocalFileStorage(IUserAccessor userAccessor, IHostingEnvironment environment, IMediator mediator, IMapper mapper)
+    public LocalFileStorage(IUserAccessor userAccessor, IHostingEnvironment environment,
+        IMediator mediator, IMapper mapper)
     {
         this.userAccessor = userAccessor;
         this.environment = environment;
@@ -34,18 +36,26 @@ public class LocalFileStorage : IFileStorage
         this.mapper = mapper;
     }
 
+    /// <inheritdoc/>
     public async Task DeleteAsync(int fileId, CancellationToken cancellationToken)
     {
-        var file = await mediator.Send(new GetFileQuery(fileId), cancellationToken);
-        var user = await userAccessor.Get(file.AssociatedUserId, cancellationToken);
-        var path = $"{environment.WebRootPath}/Files/{user.UserName}/{file.Name}";
+        var path = await GetPathOfFile(fileId, cancellationToken);
         File.Delete(path);
     }
 
     /// <inheritdoc/>
-    public Task DownloadAsync(int id, CancellationToken cancellationToken)
+    public async Task<DownloadFileDto> DownloadAsync(int id, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var file = await mediator.Send(new GetFileQuery(id), cancellationToken);
+        var user = await userAccessor.Get(file.AssociatedUserId, cancellationToken);
+        var path = @$"{environment.WebRootPath}\Files\{user.UserName}\{file.Name}";
+
+        return new DownloadFileDto
+        {
+            ResponseStream = File.Open(path, FileMode.Open),
+            ContentType = "application/octet-stream",
+            Name = file.Name,
+        };
     }
 
     /// <inheritdoc/>
@@ -94,4 +104,11 @@ public class LocalFileStorage : IFileStorage
         return path;
     }
 
+    private async Task<string> GetPathOfFile(int fileId, CancellationToken cancellationToken = default)
+    {
+        var file = await mediator.Send(new GetFileQuery(fileId), cancellationToken);
+        var user = await userAccessor.Get(file.AssociatedUserId, cancellationToken);
+        var path = @$"{environment.WebRootPath}\Files\{user.UserName}\{file.Name}";
+        return path;
+    }
 }

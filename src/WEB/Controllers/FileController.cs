@@ -94,4 +94,17 @@ public class FileController : ControllerBase
         await mediator.Send(new DeleteFileCommand(fileId), cancellationToken);
         return Ok();
     }
+
+    /// <summary>
+    /// GET download file action.
+    /// </summary>
+    /// <param name="fileId">File ID.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>File.</returns>
+    [HttpGet]
+    public async Task<FileStreamResult> Download(int fileId, CancellationToken cancellationToken)
+    {
+        var file = await mediator.Send(new DownloadFileQuery(fileId), cancellationToken);
+        return File(file.ResponseStream, file.ContentType, file.Name);
+    }
 }
