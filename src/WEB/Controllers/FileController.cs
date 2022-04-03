@@ -52,7 +52,7 @@ public class FileController : ControllerBase
 
         var response = await mediator.Send(new UploadFileCommand(file, isDeleting), cancellationToken);
 
-        return Ok($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{Url.Action("Download", new { fileId = response.Result })}");
+        return Ok(GetDownloadFileLink(response.Result));
     }
 
     /// <summary>
@@ -73,7 +73,7 @@ public class FileController : ControllerBase
 
         var response = await mediator.Send(new UploadTextCommand(text, isDeleting), cancellationToken);
 
-        return Ok($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{Url.Action("Download", new { fileId = response.Result })}");
+        return Ok(GetDownloadFileLink(response.Result));
     }
 
     /// <summary>
@@ -90,7 +90,7 @@ public class FileController : ControllerBase
         var mapped = mapper.Map<IEnumerable<StoredFileDto>>(items);
         foreach (var dto in mapped)
         {
-            dto.DownloadLink = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{Url.Action("Download", new { fileId = dto.Id })}";
+            dto.DownloadLink = GetDownloadFileLink(dto.Id);
         }
         return Ok(mapped);
     }
@@ -125,6 +125,11 @@ public class FileController : ControllerBase
             await mediator.Send(new DeleteFileCommand(fileId), CancellationToken.None);
         }
         return result;
+    }
+
+    private string GetDownloadFileLink(int fileId)
+    {
+        return $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{Url.Action("Download", new { fileId })}";
     }
 
     private async Task<FileStreamResult> GetFileAsync(int fileId, CancellationToken cancellationToken)
