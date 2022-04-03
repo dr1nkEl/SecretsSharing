@@ -10,7 +10,7 @@ namespace WEB.Controllers;
 /// Account API controller.
 /// </summary>
 [ApiController]
-[Route("[controller]/[action]")]
+[Route("api/[controller]/[action]")]
 public class AccountController : ControllerBase
 {
     private readonly SignInManager<User> signInManager;
@@ -31,12 +31,13 @@ public class AccountController : ControllerBase
     /// POST register action.
     /// </summary>
     /// <param name="credentials">Credentials.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Status code.</returns>
     [HttpPost]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [Produces("application/json")]
-    public async Task<ActionResult> Register([FromQuery] UserCredentials credentials)
+    public async Task<ActionResult> Register([FromQuery] UserCredentials credentials, CancellationToken cancellationToken)
     {
         var user = new User
         {
@@ -57,12 +58,13 @@ public class AccountController : ControllerBase
     /// POST authorize action.
     /// </summary>
     /// <param name="credentials">Credentials.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Status code.</returns>
     [HttpPost]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [Produces("application/json")]
-    public async Task<ActionResult> Authorize([FromQuery]UserCredentials credentials)
+    public async Task<ActionResult> Authorize([FromQuery]UserCredentials credentials, CancellationToken cancellationToken)
     {
         var signInResult = await signInManager.PasswordSignInAsync(credentials.Email, credentials.Password, isPersistent: false, lockoutOnFailure: false);
         if (!signInResult.Succeeded)
@@ -75,11 +77,12 @@ public class AccountController : ControllerBase
     /// <summary>
     /// POST logout action.
     /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Status code.</returns>
     [Authorize]
     [HttpPost]
     [Produces("application/json")]
-    public async Task<ActionResult> Logout()
+    public async Task<ActionResult> Logout(CancellationToken cancellationToken)
     {
         await signInManager.SignOutAsync();
         return Ok("Logged out.");

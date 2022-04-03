@@ -7,4 +7,4 @@ namespace UseCases;
 /// Get user files query.
 /// </summary>
 /// <param name="UserId">User ID.</param>
-public record GetUserFilesQuery(int UserId) : IRequest<IEnumerable<StoredFileDto>>;
+public record GetFilesQuery(int UserId) : IRequest<IEnumerable<StoredFileDto>>;

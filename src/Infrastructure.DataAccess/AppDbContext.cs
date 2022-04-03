@@ -12,7 +12,7 @@ namespace Infrastructure.DataAccess;
 public class AppDbContext : IdentityDbContext<User, IdentityRole<int>, int>, IAppDbContext
 {
     /// <inheritdoc/>
-    public DbSet<StoredFile> StoredFiles { get; }
+    public DbSet<StoredFile> StoredFiles { get; protected set; }
 
     /// <summary>
     /// Constructor.

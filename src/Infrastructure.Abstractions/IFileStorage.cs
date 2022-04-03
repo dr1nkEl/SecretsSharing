@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Infrastructure.Common;
+using Microsoft.AspNetCore.Http;
 
 namespace Infrastructure.Abstractions;
 
@@ -20,8 +21,8 @@ public interface IFileStorage
     /// </summary>
     /// <param name="file">File.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>Task.</returns>
-    Task UplaodAsync(IFormFile file, CancellationToken cancellationToken = default);
+    /// <returns>Response.</returns>
+    Task<Response<StoredFileDto>> UploadAsync(IFormFile file, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Upload text.
@@ -29,8 +30,8 @@ public interface IFileStorage
     /// </summary>
     /// <param name="text">Text.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>Task.</returns>
-    Task UploadTextAsync(string text, CancellationToken cancellationToken = default);
+    /// <returns>Response.</returns>
+    Task<Response<StoredFileDto>> UploadTextAsync(string text, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Delete file.
@@ -38,5 +39,5 @@ public interface IFileStorage
     /// <param name="fileId">File ID.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task.</returns>
-    Task DeleteFileAsync(string fileId, CancellationToken cancellationToken = default);
+    Task DeleteAsync(int fileId, CancellationToken cancellationToken = default);
 }

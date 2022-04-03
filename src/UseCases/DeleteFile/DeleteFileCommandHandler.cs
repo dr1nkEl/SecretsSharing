@@ -1,5 +1,6 @@
 ﻿using Infrastructure.Abstractions;
 using MediatR;
+using Saritasa.Tools.EFCore;
 
 namespace UseCases.DeleteFile;
 
@@ -21,8 +22,11 @@ internal class DeleteFileCommandHandler : AsyncRequestHandler<DeleteFileCommand>
     }
 
     /// <inheritdoc/>
-    protected override Task Handle(DeleteFileCommand request, CancellationToken cancellationToken)
+    protected override async Task Handle(DeleteFileCommand request, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var item = await appDbContext.StoredFiles.GetAsync(file => file.Id == request.Id, cancellationToken);
+        item.DeletedAt = DateTime.UtcNow;
+        await appDbContext.SaveChangesAsync(cancellationToken);
+        await fileStorage.DeleteAsync(request.Id, cancellationToken);
     }
 }

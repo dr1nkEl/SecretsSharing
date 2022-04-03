@@ -65,7 +65,7 @@ public class Startup
         // Other dependencies.
         services.AddMediatR(typeof(DeleteFileCommand).Assembly);
         services.AddTransient<IFileStorage, LocalFileStorage>();
-        services.AddTransient<ILoggedUserAccessor, LoggedUserAccessor>();
+        services.AddTransient<IUserAccessor, UserAccessor>();
     }
 
     /// <summary>
@@ -80,6 +80,7 @@ public class Startup
             app.UseHsts();
         }
 
+        app.UseStaticFiles();
         app.UseHttpsRedirection();
         app.UseSwagger();
         app.UseSwaggerUI();

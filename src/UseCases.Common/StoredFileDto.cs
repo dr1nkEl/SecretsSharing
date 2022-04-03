@@ -12,10 +12,8 @@ public record StoredFileDto
     public int Id { get; set; }
 
     /// <inheritdoc cref="StoredFile.Name"/>
-    [Required]
     public string Name { get; set; }
 
     /// <inheritdoc cref="StoredFile.AssociatedUserId"/>
-    [Required]
-    public int? AssociatedUserId { get; set; }
+    public int AssociatedUserId { get; set; }
 }
