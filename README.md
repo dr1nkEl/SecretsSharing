@@ -26,4 +26,3 @@ Made with
 - [AutoMapper]
 - [Identity] 
 - [EFCore]
-- [AWS S3]
