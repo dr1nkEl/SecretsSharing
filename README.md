@@ -26,3 +26,4 @@ Made with
 - [AutoMapper]
 - [Identity] 
 - [EFCore]
+- [PostgreSQL]
