@@ -68,7 +68,7 @@ public class FileController : ControllerBase
     /// <returns>Status code.</returns>
     [HttpPost]
     [Authorize]
-    public async Task<ActionResult> UploadText([FromQuery][Required] string text, [FromQuery]bool isDeleting, CancellationToken cancellationToken)
+    public async Task<ActionResult> UploadText([FromQuery][Required][MaxLength(255)] string text, [FromQuery]bool isDeleting, CancellationToken cancellationToken)
     {
         if (!ModelState.IsValid)
         {
