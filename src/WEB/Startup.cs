@@ -8,11 +8,8 @@ using Infrastructure;
 using WEB.Infrastructure.MappingProfiles;
 using MediatR;
 using UseCases;
-using Infrastructure.Common;
-using Microsoft.AspNetCore.Mvc;
 using WEB.Infrastructure.Middleware;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Text.Json;
+using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 
 namespace Saritasa.People.Web;
 
@@ -42,7 +39,14 @@ public class Startup
         // Add controllers.
         services.AddControllers();
 
+        // Data protection.
         services.AddDataProtection();
+
+        // In production, the React files will be served from this directory
+        services.AddSpaStaticFiles(configuration =>
+        {
+            configuration.RootPath = "/ClientApp/build";
+        });
 
         // Database.
         services.AddDbContext<AppDbContext>(
@@ -85,6 +89,7 @@ public class Startup
         {
             app.UseHsts();
         }
+        app.UseSpaStaticFiles();
         app.UseMiddleware<ApiExceptionMiddleware>();
         app.UseStaticFiles();
         app.UseHttpsRedirection();
@@ -97,6 +102,16 @@ public class Startup
         {
             endpoints.MapSwagger();
             endpoints.MapControllers();
+        });
+
+        app.UseSpa(spa =>
+        {
+            spa.Options.SourcePath = "../ClientApp";
+
+            if (environment.IsDevelopment())
+            {
+                spa.UseReactDevelopmentServer(npmScript: "start");
+            }
         });
     }
 }
