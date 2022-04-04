@@ -21,8 +21,7 @@ public record StoredFile
     /// <summary>
     /// Associated user ID.
     /// </summary>
-    [Required]
-    public int? AssociatedUserId { get; set; }
+    public int AssociatedUserId { get; set; }
 
     /// <summary>
     /// Associated user.
