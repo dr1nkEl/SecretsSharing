@@ -32,8 +32,8 @@ internal class UploadFileCommandHandler : IRequestHandler<UploadFileCommand, Res
         var response = await fileStorage.UploadAsync(request.File, cancellationToken);
         var item = mapper.Map<StoredFile>(response.Result);
         item.IsDeleting = request.IsDeleting;
-        await appDbContext.StoredFiles.AddAsync(item, cancellationToken);
-        await appDbContext.SaveChangesAsync(cancellationToken);
+        await appDbContext.StoredFiles.AddAsync(item, CancellationToken.None);
+        await appDbContext.SaveChangesAsync(CancellationToken.None);
         return new Response<int>
         {
             Result = item.Id,

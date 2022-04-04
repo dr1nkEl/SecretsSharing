@@ -27,6 +27,6 @@ internal class DeleteFileCommandHandler : AsyncRequestHandler<DeleteFileCommand>
         var item = await appDbContext.StoredFiles.GetAsync(file => file.Id == request.Id, cancellationToken);
         await fileStorage.DeleteAsync(request.Id, cancellationToken);
         item.DeletedAt = DateTime.UtcNow;
-        await appDbContext.SaveChangesAsync(cancellationToken);
+        await appDbContext.SaveChangesAsync(CancellationToken.None);
     }
 }
