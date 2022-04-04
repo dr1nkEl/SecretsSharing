@@ -56,7 +56,6 @@ public class FileController : ControllerBase
         }
 
         var response = await mediator.Send(new UploadFileCommand(file, isDeleting), cancellationToken);
-
         return Ok(GetDownloadFileLink(dataProtector.Protect(response.Result.ToString())));
     }
 
@@ -78,7 +77,7 @@ public class FileController : ControllerBase
 
         var response = await mediator.Send(new UploadTextCommand(text, isDeleting), cancellationToken);
 
-        return Ok(GetDownloadFileLink(response.Result.ToString()));
+        return Ok(GetDownloadFileLink(dataProtector.Protect(response.Result.ToString())));
     }
 
     /// <summary>
@@ -130,7 +129,7 @@ public class FileController : ControllerBase
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>File.</returns>
     [HttpGet("{fileId}")]
-    public async Task<ActionResult<FileStreamResult>> Download(string fileId, CancellationToken cancellationToken)
+    public async Task<FileStreamResult> Download(string fileId, CancellationToken cancellationToken)
     {
         var unportected = dataProtector.Unprotect(fileId);
 
@@ -138,7 +137,7 @@ public class FileController : ControllerBase
 
         if (!parsingResult)
         {
-            return BadRequest("Invalid ID.");
+            throw new ValidationException("Invalid ID.");
         }
 
         var result = await GetFileAsync(id, cancellationToken);
@@ -147,7 +146,7 @@ public class FileController : ControllerBase
         {
             await mediator.Send(new DeleteFileCommand(id), CancellationToken.None);
         }
-        return Ok(result);
+        return result;
     }
 
     private string GetDownloadFileLink(string fileId)
