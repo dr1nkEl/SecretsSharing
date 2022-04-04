@@ -115,7 +115,7 @@ public class LocalFileStorage : IFileStorage
         return path;
     }
 
-    private async Task<string> GetPathOfFile(int fileId, CancellationToken cancellationToken = default)
+    private async Task<string> GetPathOfFileAsync(int fileId, CancellationToken cancellationToken = default)
     {
         var file = await mediator.Send(new GetFileQuery(fileId), cancellationToken);
         var user = await userAccessor.Get(file.AssociatedUserId, cancellationToken);
