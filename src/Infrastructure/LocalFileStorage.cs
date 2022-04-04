@@ -114,12 +114,4 @@ public class LocalFileStorage : IFileStorage
         File.WriteAllText(path, text);
         return path;
     }
-
-    private async Task<string> GetPathOfFileAsync(int fileId, CancellationToken cancellationToken = default)
-    {
-        var file = await mediator.Send(new GetFileQuery(fileId), cancellationToken);
-        var user = await userAccessor.Get(file.AssociatedUserId, cancellationToken);
-        var path = @$"{environment.WebRootPath}\Files\{user.UserName}\{file.Name}";
-        return path;
-    }
 }
