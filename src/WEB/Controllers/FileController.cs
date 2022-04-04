@@ -140,23 +140,18 @@ public class FileController : ControllerBase
             throw new ValidationException("Invalid ID.");
         }
 
-        var result = await GetFileAsync(id, cancellationToken);
+        var fileDownloadDto = await mediator.Send(new DownloadFileQuery(id), cancellationToken);
+
         var file = await mediator.Send(new GetFileQuery(id), CancellationToken.None);
         if (file.IsDeleting)
         {
             await mediator.Send(new DeleteFileCommand(id), CancellationToken.None);
         }
-        return result;
+        return File(fileDownloadDto.ResponseStream, fileDownloadDto.ContentType, file.Name);
     }
 
     private string GetDownloadFileLink(string fileId)
     {
         return $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{Url.Action("Download", new { fileId })}";
-    }
-
-    private async Task<FileStreamResult> GetFileAsync(int fileId, CancellationToken cancellationToken)
-    {
-        var file = await mediator.Send(new DownloadFileQuery(fileId), cancellationToken);
-        return File(file.ResponseStream, file.ContentType, file.Name);
     }
 }
