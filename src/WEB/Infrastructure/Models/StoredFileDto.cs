@@ -20,4 +20,9 @@ public record StoredFileDto
     /// Download link.
     /// </summary>
     public string DownloadLink { get; internal set; }
+
+    /// <summary>
+    /// Encrypted ID.
+    /// </summary>
+    public string EncryptedId { get; internal set; }
 }

@@ -42,6 +42,8 @@ public class Startup
         // Add controllers.
         services.AddControllers();
 
+        services.AddDataProtection();
+
         // Database.
         services.AddDbContext<AppDbContext>(
             new DbContextOptionsSetup(configuration.GetConnectionString("AppDatabase")).Setup);

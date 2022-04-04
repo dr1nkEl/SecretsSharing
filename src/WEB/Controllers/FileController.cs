@@ -2,9 +2,11 @@
 using Infrastructure.Abstractions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using System.Text;
 using UseCases;
 using WEB.Infrastructure.Models;
 
@@ -20,6 +22,7 @@ public class FileController : ControllerBase
     private readonly IMediator mediator;
     private readonly IUserAccessor userAccessor;
     private readonly IMapper mapper;
+    private readonly IDataProtector dataProtector;
 
     /// <summary>
     /// Constructor.
@@ -27,11 +30,13 @@ public class FileController : ControllerBase
     /// <param name="mediator">Mediator.</param>
     /// <param name="userAccessor">Logged user accessor.</param>
     /// <param name="mapper">Mapper.</param>
-    public FileController(IMediator mediator, IUserAccessor userAccessor, IMapper mapper)
+    public FileController(IMediator mediator, IUserAccessor userAccessor,
+        IMapper mapper, IDataProtectionProvider protectionProvider)
     {
         this.mediator = mediator;
         this.userAccessor = userAccessor;
         this.mapper = mapper;
+        this.dataProtector = protectionProvider.CreateProtector("WEB.FileController");
     }
 
     /// <summary>
@@ -52,7 +57,7 @@ public class FileController : ControllerBase
 
         var response = await mediator.Send(new UploadFileCommand(file, isDeleting), cancellationToken);
 
-        return Ok(GetDownloadFileLink(response.Result));
+        return Ok(GetDownloadFileLink(dataProtector.Protect(response.Result.ToString())));
     }
 
     /// <summary>
@@ -73,7 +78,7 @@ public class FileController : ControllerBase
 
         var response = await mediator.Send(new UploadTextCommand(text, isDeleting), cancellationToken);
 
-        return Ok(GetDownloadFileLink(response.Result));
+        return Ok(GetDownloadFileLink(response.Result.ToString()));
     }
 
     /// <summary>
@@ -90,7 +95,7 @@ public class FileController : ControllerBase
         var mapped = mapper.Map<IEnumerable<StoredFileDto>>(items);
         foreach (var dto in mapped)
         {
-            dto.DownloadLink = GetDownloadFileLink(dto.Id);
+            dto.DownloadLink = GetDownloadFileLink(dataProtector.Protect(dto.Id.ToString()));
         }
         return Ok(mapped);
     }
@@ -101,11 +106,20 @@ public class FileController : ControllerBase
     /// <param name="fileId">File ID.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Status code.</returns>
-    [HttpPost]
+    [HttpPost("{fileId}")]
     [Authorize]
-    public async Task<ActionResult> Delete(int fileId, CancellationToken cancellationToken)
+    public async Task<ActionResult> Delete(string fileId, CancellationToken cancellationToken)
     {
-        await mediator.Send(new DeleteFileCommand(fileId), cancellationToken);
+        var unportected = dataProtector.Unprotect(fileId);
+
+        var parsingResult = int.TryParse(unportected, out int id);
+
+        if (!parsingResult)
+        {
+            return BadRequest("Invalid ID.");
+        }
+
+        await mediator.Send(new DeleteFileCommand(id), cancellationToken);
         return Ok();
     }
 
@@ -115,19 +129,28 @@ public class FileController : ControllerBase
     /// <param name="fileId">File ID.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>File.</returns>
-    [HttpGet]
-    public async Task<FileStreamResult> Download(int fileId, CancellationToken cancellationToken)
+    [HttpGet("{fileId}")]
+    public async Task<ActionResult<FileStreamResult>> Download(string fileId, CancellationToken cancellationToken)
     {
-        var result = await GetFileAsync(fileId, cancellationToken);
-        var file = await mediator.Send(new GetFileQuery(fileId), CancellationToken.None);
+        var unportected = dataProtector.Unprotect(fileId);
+
+        var parsingResult = int.TryParse(unportected, out int id);
+
+        if (!parsingResult)
+        {
+            return BadRequest("Invalid ID.");
+        }
+
+        var result = await GetFileAsync(id, cancellationToken);
+        var file = await mediator.Send(new GetFileQuery(id), CancellationToken.None);
         if (file.IsDeleting)
         {
-            await mediator.Send(new DeleteFileCommand(fileId), CancellationToken.None);
+            await mediator.Send(new DeleteFileCommand(id), CancellationToken.None);
         }
-        return result;
+        return Ok(result);
     }
 
-    private string GetDownloadFileLink(int fileId)
+    private string GetDownloadFileLink(string fileId)
     {
         return $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{Url.Action("Download", new { fileId })}";
     }
