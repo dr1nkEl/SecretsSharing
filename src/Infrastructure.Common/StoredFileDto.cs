@@ -1,5 +1,5 @@
 ﻿using Domain;
-using System.ComponentModel.DataAnnotations;
+
 
 namespace Infrastructure.Common;
 
@@ -8,14 +8,9 @@ namespace Infrastructure.Common;
 /// </summary>
 public record StoredFileDto
 {
-    /// <inheritdoc cref="StoredFile.Id"/>
-    public int Id { get; set; }
-
     /// <inheritdoc cref="StoredFile.Name"/>
-    [Required]
     public string Name { get; set; }
 
     /// <inheritdoc cref="StoredFile.AssociatedUserId"/>
-    [Required]
-    public int? AssociatedUserId { get; set; }
+    public int AssociatedUserId { get; set; }
 }
