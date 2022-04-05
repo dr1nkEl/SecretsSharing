@@ -5,7 +5,7 @@ import NavMenu from './NavMenu';
 export default (props: { children?: React.ReactNode }) => (
     <React.Fragment>
         <NavMenu/>
-        <Container>
+        <Container className="d-flex justify-content-center">
             {props.children}
         </Container>
     </React.Fragment>
