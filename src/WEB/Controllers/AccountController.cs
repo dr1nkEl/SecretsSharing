@@ -64,7 +64,7 @@ public class AccountController : ControllerBase
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [Produces("application/json")]
-    public async Task<ActionResult> Authorize([FromQuery]UserCredentials credentials, CancellationToken cancellationToken)
+    public async Task<ActionResult> Authorize([FromForm]UserCredentials credentials, CancellationToken cancellationToken)
     {
         var signInResult = await signInManager.PasswordSignInAsync(credentials.Email, credentials.Password, isPersistent: false, lockoutOnFailure: false);
         if (!signInResult.Succeeded)
